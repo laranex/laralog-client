@@ -1,7 +1,7 @@
 # Laralog Client
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/Laranex/laravel-myanmar-payments.svg?style=flat-square)](https://packagist.org/packages/Laranex/laravel-myanmar-payments)
-[![Total Downloads](https://img.shields.io/packagist/dt/Laranex/laravel-myanmar-payments.svg?style=flat-square)](https://packagist.org/packages/Laranex/laravel-myanmar-payments)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/Laranex/laralog-client.svg?style=flat-square)](https://packagist.org/packages/Laranex/laralog-client)
+[![Total Downloads](https://img.shields.io/packagist/dt/Laranex/laralog-client.svg?style=flat-square)](https://packagist.org/packages/Laranex/laralog-client)
 
 Laravel custom log channel for [Laralog Server](https://github.com/naythukhant/laralog)
 
@@ -23,10 +23,12 @@ composer require laranex/laralog-client
   php artisan vendor:publish --tag="laralog-client"
 ```
 
-Update your default log channel in .env
+Update your default log channel and laralog credentials in .env
 
 ```php
 LOG_CHANNEL=laralog
+LARALOG_CLIENT_BASE_URL
+LARALOG_CLIENT_TEAM_SECRET_KEY
 ```
 
 For usage reference, please refer to [Logging - Laravel](https://laravel.com/docs/master/logging)
