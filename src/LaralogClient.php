@@ -4,13 +4,12 @@ namespace Laranex\LaralogClient;
 
 use Laranex\LaralogClient\Exceptions\LaralogClientHttpException;
 use Monolog\Handler\AbstractProcessingHandler;
-use Monolog\Logger;
+use Monolog\Level;
+use Monolog\LogRecord;
 
 class LaralogClient extends AbstractProcessingHandler
 {
-    protected $level;
-
-    public function __construct(int $level = Logger::DEBUG, bool $bubble = true)
+    public function __construct(int|string|Level $level = Level::Debug, bool $bubble = true)
     {
         parent::__construct($level, $bubble);
     }
@@ -18,12 +17,12 @@ class LaralogClient extends AbstractProcessingHandler
     /**
      * @throws LaralogClientHttpException
      */
-    public function write(array $record): void
+    public function write(LogRecord $record): void
     {
         $data = [
-            'level' => $record['level_name'],
-            'message' => $record['message'],
-            'context' => $record['context'],
+            'level' => $record->level->getName(),
+            'message' => $record->message,
+            'context' => $record->context,
         ];
 
         $url = config('laralog-client.base_url').'/api/logs';
