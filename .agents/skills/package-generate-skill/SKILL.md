@@ -17,8 +17,8 @@ Keep the package's bundled Boost skill accurate, concise, and focused on helping
 1. Inspect the package implementation before editing the Boost skill: service provider, facades, public classes, commands, config, routes, migrations, events, views, publish tags, and tests.
 2. Inspect package documentation: `README.md`, contributing docs, examples, and changelog entries that describe user-facing behavior.
 3. Identify the public integration surface only. Include install, configure, publish, command, route, facade, helper, middleware, event, and testing guidance only when the package actually exposes it.
-4. Update `resources/boost/skills/*/SKILL.md` with practical adoption steps, references, examples, and anti-patterns for Laravel app developers using the package.
-5. Preserve front matter, package metadata, and the Boost skill structure: description, primary goal, workflow, references, examples, and anti-patterns.
+4. Update `resources/boost/skills/laralog-client/SKILL.md` (front matter `name: laralog-client`) with how to use the package in an application: When to use, Install, Configure, Use (one subsection per feature), Test your app, Avoid. Copy it unchanged to `skills/laralog-client/SKILL.md`; `tests/Unit/AgentSkillTest.php` checks both copies are identical.
+5. Preserve front matter and package metadata. Keep the skill usage-only: no sections about maintaining the package, releasing it, or regenerating the skill.
 6. Validate that the Boost skill does not describe internals as public API and does not document features that are not implemented.
 
 ## Writing Rules
@@ -31,7 +31,7 @@ Keep the package's bundled Boost skill accurate, concise, and focused on helping
 
 ## References
 
-- `resources/boost/skills/`
+- `resources/boost/skills/laralog-client/SKILL.md` and `skills/laralog-client/SKILL.md`
 - `src/*ServiceProvider.php`
 - `src/Facades/`
 - `src/Console/Commands/`
