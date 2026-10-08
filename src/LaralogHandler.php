@@ -10,19 +10,27 @@ use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Level;
 use Monolog\Logger;
 use Monolog\LogRecord;
+use Throwable;
 
 /**
  * Monolog handler that ships every record to a Laralog server.
  *
  * Written against Monolog 3 (LogRecord objects) but also accepts Monolog 2
  * style array records, so widening the Monolog constraint stays trivial.
+ *
+ * By default a failure to reach the Laralog server never escapes into the
+ * code that logged: the first failure is written to PHP's error log
+ * (stderr on the CLI) and later ones are dropped silently.
  */
 class LaralogHandler extends AbstractProcessingHandler
 {
+    private bool $failureReported = false;
+
     public function __construct(
         private readonly LaralogClient $client,
         int|string|Level $level = Logger::DEBUG,
         bool $bubble = true,
+        private readonly bool $ignoreExceptions = true,
     ) {
         parent::__construct($level, $bubble);
     }
@@ -33,11 +41,47 @@ class LaralogHandler extends AbstractProcessingHandler
     }
 
     /**
+     * Whether failures to ship a record are swallowed instead of thrown.
+     */
+    public function ignoresExceptions(): bool
+    {
+        return $this->ignoreExceptions;
+    }
+
+    /**
      * @param  array<string, mixed>|LogRecord  $record
      */
     protected function write(array|LogRecord $record): void
     {
-        $this->client->send($this->payload($record));
+        try {
+            $this->client->send($this->payload($record));
+        } catch (Throwable $exception) {
+            if (! $this->ignoreExceptions) {
+                throw $exception;
+            }
+
+            $this->reportFailure($exception);
+        }
+    }
+
+    /**
+     * Report a swallowed failure once per handler so a down server cannot flood the error log.
+     *
+     * PHP's error_log() is used instead of a Laravel logger to avoid logging recursively.
+     */
+    protected function reportFailure(Throwable $exception): void
+    {
+        if ($this->failureReported) {
+            return;
+        }
+
+        $this->failureReported = true;
+
+        error_log(sprintf(
+            '[laralog-client] Could not ship a log record to Laralog (%s: %s). Further failures from this handler are ignored.',
+            $exception::class,
+            $exception->getMessage(),
+        ));
     }
 
     /**

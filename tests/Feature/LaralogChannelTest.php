@@ -92,7 +92,8 @@ it('works inside a stack channel', function (): void {
     Http::assertSent(fn (HttpRequest $request): bool => $request['level'] === 'NOTICE' && $request['message'] === 'stacked');
 });
 
-it('throws when the Laralog server rejects the record', function (): void {
+it('throws when the Laralog server rejects the record and exceptions are not ignored', function (): void {
+    config()->set('laralog-client.ignore_exceptions', false);
     fakeLaralogServer(401, '{"message":"Unauthenticated."}');
 
     try {
@@ -104,13 +105,15 @@ it('throws when the Laralog server rejects the record', function (): void {
     }
 });
 
-it('throws when the Laralog server returns a server error', function (): void {
+it('throws when the Laralog server returns a server error and exceptions are not ignored', function (): void {
+    config()->set('laralog-client.ignore_exceptions', false);
     fakeLaralogServer(500, 'boom');
 
     Log::channel('laralog')->info('failed');
 })->throws(LaralogClientHttpException::class, 'failed with status 500: boom');
 
-it('wraps connection failures in LaralogClientHttpException', function (): void {
+it('wraps connection failures in LaralogClientHttpException when exceptions are not ignored', function (): void {
+    config()->set('laralog-client.ignore_exceptions', false);
     Http::fake(fn () => throw new ConnectionException('Connection refused'));
 
     try {
@@ -121,6 +124,45 @@ it('wraps connection failures in LaralogClientHttpException', function (): void 
             ->and($exception->getPrevious())->toBeInstanceOf(ConnectionException::class);
     }
 });
+
+it('never lets a Laralog failure break the caller by default', function (): void {
+    $errorLog = tempnam(sys_get_temp_dir(), 'laralog');
+    $previous = ini_set('error_log', (string) $errorLog);
+
+    try {
+        fakeLaralogServer(500, 'boom');
+        Log::channel('laralog')->info('first');
+        Log::channel('laralog')->info('second');
+
+        Http::fake(fn () => throw new ConnectionException('Connection refused'));
+        Log::channel('laralog')->error('offline');
+
+        $contents = (string) file_get_contents((string) $errorLog);
+    } finally {
+        ini_set('error_log', (string) $previous);
+        @unlink((string) $errorLog);
+    }
+
+    expect(substr_count($contents, '[laralog-client]'))->toBe(1)
+        ->and($contents)->toContain(LaralogClientHttpException::class)
+        ->and($contents)->toContain('failed with status 500: boom');
+});
+
+it('lets a channel override the ignore_exceptions config', function (): void {
+    config()->set('logging.channels.laralog', ['driver' => 'laralog', 'ignore_exceptions' => false]);
+    fakeLaralogServer(503, 'down');
+
+    Log::channel('laralog')->info('failed');
+})->throws(LaralogClientHttpException::class, 'failed with status 503: down');
+
+it('reads ignore_exceptions from the package config', function (bool $ignore): void {
+    config()->set('laralog-client.ignore_exceptions', $ignore);
+
+    $handler = Log::channel('laralog')->getLogger()->getHandlers()[0];
+
+    expect($handler)->toBeInstanceOf(LaralogHandler::class)
+        ->and($handler->ignoresExceptions())->toBe($ignore);
+})->with([true, false]);
 
 it('resolves the channel to a Monolog logger using the Laralog handler', function (): void {
     $logger = Log::channel('laralog')->getLogger();

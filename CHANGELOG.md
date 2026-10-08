@@ -16,6 +16,7 @@ Versions 2 and 3 were never released; v4.0.0 follows v1.0.1 directly so every La
 - `LaralogClientHttpException` extends `RuntimeException`, carries the HTTP status as its code, keeps the underlying connection exception as `getPrevious()`, and is also thrown when `base_url` or `team_secret_key` is missing.
 - The `laralog` channel honours `level`, `bubble` and `name` from `config/logging.php`, and any extra channel may use `'driver' => 'laralog'`. An unknown `level` is rejected (Laravel then falls back to its emergency logger) instead of being passed to Monolog unchecked.
 - Requires `guzzlehttp/guzzle` ^7.2 or ^8 for Laravel's HTTP client (Laravel 10 only suggests it; Laravel 11+ already requires it).
+- A failed request no longer breaks the code that logged: by default the record is dropped and the first failure is written to PHP's error log. Set the new `ignore_exceptions` config value (`LARALOG_CLIENT_IGNORE_EXCEPTIONS`, default `true`) or a channel's `ignore_exceptions` option to `false` to throw `LaralogClientHttpException` instead, e.g. in tests or CI.
 - The config file is `config/laralog-client.php` and is published with the `laralog-client` or `laralog-client-config` tag.
 
 ### Upgrading
@@ -23,7 +24,11 @@ Versions 2 and 3 were never released; v4.0.0 follows v1.0.1 directly so every La
 - If you referenced the handler class directly, replace `Laranex\LaralogClient\LaralogClient` with `Laranex\LaralogClient\LaralogHandler`; `driver => 'laralog'` channels need no change.
 - `LaralogClientHttpException::getCode()` is now the HTTP status (or `0` for connection failures) instead of always `500`; the default constructor message is gone in favour of `unexpectedStatus()`, `connectionFailed()` and `missingConfiguration()`.
 - `LARALOG_CLIENT_BASE_URL` and `LARALOG_CLIENT_TEAM_SECRET_KEY` are now required: resolving the channel without them throws instead of posting to `/api/logs` on an empty host.
-- Re-publish the config if you want the new `timeout` key: `php artisan vendor:publish --tag="laralog-client-config" --force`.
+- Re-publish the config if you want the new `timeout` and `ignore_exceptions` keys: `php artisan vendor:publish --tag="laralog-client-config" --force`.
+
+## 1.0.1 - 2023-03-21
+
+- Allow PHP 8 (`"php": "^7.0|^8.0"`)
 
 ## 1.0.0 - 2023-02-25
 

@@ -11,7 +11,8 @@ use Laranex\LaralogClient\LaralogClientServiceProvider;
 it('merges the package config with the host config', function (): void {
     expect(config('laralog-client.base_url'))->toBe('https://laralog.test/')
         ->and(config('laralog-client.team_secret_key'))->toBe('team-secret')
-        ->and(config('laralog-client.timeout'))->toBe(5);
+        ->and(config('laralog-client.timeout'))->toBe(5)
+        ->and(config('laralog-client.ignore_exceptions'))->toBeTrue();
 });
 
 it('registers a default laralog channel', function (): void {

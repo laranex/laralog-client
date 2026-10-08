@@ -38,6 +38,7 @@ LOG_CHANNEL=laralog
 LARALOG_CLIENT_BASE_URL=https://laralog.example.com
 LARALOG_CLIENT_TEAM_SECRET_KEY=your-team-secret
 LARALOG_CLIENT_TIMEOUT=5
+LARALOG_CLIENT_IGNORE_EXCEPTIONS=true
 ```
 
 The package registers a `laralog` channel for you. Use it like any other [Laravel log channel](https://laravel.com/docs/logging):
@@ -60,7 +61,7 @@ To tune the channel or add more of them, declare them in `config/logging.php` wi
 ],
 ```
 
-A request the server rejects, or that cannot reach it, throws `Laranex\LaralogClient\Exceptions\LaralogClientHttpException` with the HTTP status as its code.
+By default a request the server rejects, or that cannot reach it, never breaks the code that logged: the record is dropped and the first failure is written to PHP's error log. Set `LARALOG_CLIENT_IGNORE_EXCEPTIONS=false` (for example in tests or CI), or `'ignore_exceptions' => false` on a channel, to throw `Laranex\LaralogClient\Exceptions\LaralogClientHttpException` with the HTTP status as its code instead.
 
 ## Testing
 

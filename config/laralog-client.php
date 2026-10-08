@@ -25,10 +25,25 @@ return [
     |--------------------------------------------------------------------------
     |
     | The number of seconds to wait for the Laralog server before the request
-    | fails. A failed request throws LaralogClientHttpException.
+    | fails.
     |
     */
 
     'timeout' => (int) env('LARALOG_CLIENT_TIMEOUT', 5),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ignore Exceptions
+    |--------------------------------------------------------------------------
+    |
+    | When true (the default) a failed request never breaks the code that
+    | logged: the first failure is written to PHP's error log and the record
+    | is dropped. Set it to false (e.g. in tests or CI) to throw
+    | LaralogClientHttpException instead. A channel in config/logging.php
+    | may override it with its own "ignore_exceptions" option.
+    |
+    */
+
+    'ignore_exceptions' => (bool) env('LARALOG_CLIENT_IGNORE_EXCEPTIONS', true),
 
 ];

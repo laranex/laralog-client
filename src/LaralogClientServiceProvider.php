@@ -60,12 +60,14 @@ class LaralogClientServiceProvider extends ServiceProvider
 
         // LogManager rebinds driver closures to itself, so capture the provider's resolver up front.
         $level = fn (mixed $level): Level => $this->level($level);
+        $ignoreExceptions = fn (Container $app, array $config): bool => (bool) ($config['ignore_exceptions'] ?? $this->config($app, 'ignore_exceptions', true));
 
-        $this->app->make(LogManager::class)->extend('laralog', function (Container $app, array $config) use ($level): Logger {
+        $this->app->make(LogManager::class)->extend('laralog', function (Container $app, array $config) use ($level, $ignoreExceptions): Logger {
             $handler = new LaralogHandler(
                 $app->make(LaralogClient::class),
                 $level($config['level'] ?? Level::Debug),
                 (bool) ($config['bubble'] ?? true),
+                $ignoreExceptions($app, $config),
             );
 
             $name = $config['name'] ?? 'laralog';

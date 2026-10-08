@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\Request as HttpRequest;
+use Laranex\LaralogClient\Exceptions\LaralogClientHttpException;
 use Laranex\LaralogClient\LaralogClient;
 use Laranex\LaralogClient\LaralogHandler;
 use Monolog\Formatter\LineFormatter;
@@ -98,3 +99,24 @@ it('filters by level on Monolog 3 and 2 alike', function (): void {
 
     $http->assertSentCount(2);
 });
+
+it('ignores exceptions by default and throws when asked to', function (): void {
+    $http = new HttpFactory;
+    $http->fake(fn () => $http->response('boom', 500));
+    $client = new LaralogClient($http, 'https://logs.example.com', 'secret');
+
+    $errorLog = tempnam(sys_get_temp_dir(), 'laralog');
+    $previous = ini_set('error_log', (string) $errorLog);
+
+    try {
+        $quiet = new LaralogHandler($client);
+        (new Logger('app', [$quiet]))->error('swallowed');
+    } finally {
+        ini_set('error_log', (string) $previous);
+        @unlink((string) $errorLog);
+    }
+
+    expect($quiet->ignoresExceptions())->toBeTrue();
+
+    (new Logger('app', [new LaralogHandler($client, ignoreExceptions: false)]))->error('thrown');
+})->throws(LaralogClientHttpException::class, 'failed with status 500: boom');
