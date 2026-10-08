@@ -1,7 +1,7 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
     "name": "laranex/laralog-client",
-    "description": "Laravel log channel that sends your logs to a Laralog server over HTTP",
+    "description": "Laralog for Laravel: a log channel that sends your logs to a Laralog server.",
     "keywords": [
         "laravel",
         "laranex",

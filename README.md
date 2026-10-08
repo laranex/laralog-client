@@ -5,7 +5,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/laranex/laralog-client.svg?style=flat-square)](https://packagist.org/packages/laranex/laralog-client)
 [![License](https://img.shields.io/packagist/l/laranex/laralog-client.svg?style=flat-square)](LICENSE.md)
 
-A Laravel log channel that ships your application logs to a Laralog server over HTTP. Built for humans and AI agents.
+Laralog for Laravel: a log channel that sends your logs to a Laralog server. Built for humans and AI agents.
 
 ## Documentation
 
