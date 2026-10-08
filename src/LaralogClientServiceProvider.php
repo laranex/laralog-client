@@ -1,48 +1,116 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Laranex\LaralogClient;
 
-use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Http\Client\Factory as HttpFactory;
+use Illuminate\Log\LogManager;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
+use Laranex\LaralogClient\Exceptions\LaralogClientHttpException;
+use Monolog\Level;
 use Monolog\Logger;
 
 class LaralogClientServiceProvider extends ServiceProvider
 {
     /**
-     * Bootstrap the application services.
+     * Register any application services.
      */
-    public function boot()
+    public function register(): void
     {
-        if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__.'/../config/config.php' => config_path('laralog-client.php'),
-            ], 'laralog-client');
-        }
+        $this->mergeConfigFrom(__DIR__.'/../config/laralog-client.php', 'laralog-client');
+
+        $this->app->singleton(LaralogClient::class, fn (Container $app): LaralogClient => new LaralogClient(
+            $app->make(HttpFactory::class),
+            $this->requiredConfig($app, 'base_url'),
+            $this->requiredConfig($app, 'team_secret_key'),
+            (int) $this->config($app, 'timeout', 5),
+        ));
+
+        $this->registerChannel();
     }
 
     /**
-     * Register the application services.
+     * Bootstrap any application services.
      */
-    public function register()
+    public function boot(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'laralog-client');
+        if (! $this->app->runningInConsole()) {
+            return;
+        }
 
-        $this->app->booted(function () {
-            $config = [
-                'driver' => 'laralog',
-                'name' => 'laralog',
-            ];
-            config()->set('logging.channels.laralog', $config);
-        });
+        $this->publishes([
+            __DIR__.'/../config/laralog-client.php' => config_path('laralog-client.php'),
+        ], ['laralog-client', 'laralog-client-config']);
+    }
 
-        Log::extend('laralog', function ($app, $config) {
-            $logger = new Logger($config['name']);
-            $handler = new LaralogClient(
-                $config['level'] ?? Logger::DEBUG
+    /**
+     * Register the "laralog" log driver and a default "laralog" channel using it.
+     */
+    private function registerChannel(): void
+    {
+        $config = $this->app->make(ConfigRepository::class);
+
+        if (! $config->has('logging.channels.laralog')) {
+            $config->set('logging.channels.laralog', ['driver' => 'laralog']);
+        }
+
+        // LogManager rebinds driver closures to itself, so capture the provider's resolver up front.
+        $level = fn (mixed $level): Level => $this->level($level);
+
+        $this->app->make(LogManager::class)->extend('laralog', function (Container $app, array $config) use ($level): Logger {
+            $handler = new LaralogHandler(
+                $app->make(LaralogClient::class),
+                $level($config['level'] ?? Level::Debug),
+                (bool) ($config['bubble'] ?? true),
             );
-            $logger->pushHandler($handler);
 
-            return $logger;
+            $name = $config['name'] ?? 'laralog';
+
+            return new Logger(is_string($name) ? $name : 'laralog', [$handler]);
         });
+    }
+
+    /**
+     * Turn the channel's "level" option (a Level, a PSR-3/Monolog name or a Monolog number) into a Level.
+     */
+    private function level(mixed $level): Level
+    {
+        if ($level instanceof Level) {
+            return $level;
+        }
+
+        if (is_int($level) && ($resolved = Level::tryFrom($level)) !== null) {
+            return $resolved;
+        }
+
+        if (is_string($level)) {
+            foreach (Level::cases() as $case) {
+                if (strcasecmp($case->name, $level) === 0) {
+                    return $case;
+                }
+            }
+        }
+
+        throw new InvalidArgumentException('Invalid log level for the laralog channel.');
+    }
+
+    private function config(Container $app, string $key, mixed $default = null): mixed
+    {
+        return $app->make(ConfigRepository::class)->get('laralog-client.'.$key, $default);
+    }
+
+    private function requiredConfig(Container $app, string $key): string
+    {
+        $value = $this->config($app, $key);
+
+        if (! is_string($value) || $value === '') {
+            throw LaralogClientHttpException::missingConfiguration($key);
+        }
+
+        return $value;
     }
 }

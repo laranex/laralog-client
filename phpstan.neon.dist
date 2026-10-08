@@ -1,0 +1,9 @@
+parameters:
+    level: 7
+    phpVersion: 80100
+    paths:
+        - src
+        - config
+    tmpDir: build/phpstan
+    configDirectories:
+        - config

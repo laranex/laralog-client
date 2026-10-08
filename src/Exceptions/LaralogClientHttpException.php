@@ -1,14 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Laranex\LaralogClient\Exceptions;
 
-use Exception;
+use RuntimeException;
 use Throwable;
 
-class LaralogClientHttpException extends Exception
+class LaralogClientHttpException extends RuntimeException
 {
-    public function __construct(string $message = 'Something went wrong in LaralogClient', int $code = 500, ?Throwable $previous = null)
+    public static function unexpectedStatus(int $status, string $body): self
     {
-        parent::__construct($message, $code, $previous);
+        return new self(sprintf('Request to the Laralog server failed with status %d: %s', $status, $body), $status);
+    }
+
+    public static function connectionFailed(Throwable $previous): self
+    {
+        return new self('Could not connect to the Laralog server: '.$previous->getMessage(), 0, $previous);
+    }
+
+    public static function missingConfiguration(string $key): self
+    {
+        return new self(sprintf('The "laralog-client.%s" config value is not set.', $key));
     }
 }

@@ -1,56 +1,58 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Laranex\LaralogClient;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Factory as HttpFactory;
 use Laranex\LaralogClient\Exceptions\LaralogClientHttpException;
-use Monolog\Handler\AbstractProcessingHandler;
-use Monolog\Level;
-use Monolog\LogRecord;
 
-class LaralogClient extends AbstractProcessingHandler
+/**
+ * Posts log records to a Laralog server.
+ */
+class LaralogClient
 {
-    public function __construct(int|string|Level $level = Level::Debug, bool $bubble = true)
+    public function __construct(
+        private readonly HttpFactory $http,
+        private readonly string $baseUrl,
+        private readonly string $teamSecretKey,
+        private readonly int $timeout = 5,
+    ) {}
+
+    /**
+     * The URL every record is posted to.
+     */
+    public function endpoint(): string
     {
-        parent::__construct($level, $bubble);
+        return rtrim($this->baseUrl, '/').'/api/logs';
     }
 
     /**
+     * Send one log record to the Laralog server.
+     *
+     * @param  array{level: string, message: string, context: array<mixed>}  $record
+     *
      * @throws LaralogClientHttpException
      */
-    public function write(LogRecord $record): void
+    public function send(array $record): void
     {
-        $data = [
-            'level' => $record->level->getName(),
-            'message' => $record->message,
-            'context' => $record->context,
-        ];
-
-        $url = config('laralog-client.base_url').'/api/logs';
-        $headers = [
-            'X-TEAM-SECRET-KEY: '.config('laralog-client.team_secret_key'),
-            'Content-Type: application/json',
-            'x-requested-with: XMLHttpRequest',
-        ];
-
-        $options = [
-            'http' => [
-                'header' => implode("\r\n", $headers),
-                'method' => 'POST',
-                'content' => json_encode($data),
-                'ignore_errors' => true,
-            ],
-        ];
-
-        $context = stream_context_create($options);
-        $response = file_get_contents($url, false, $context);
-
-        if ($response === false) {
-            throw new LaralogClientHttpException();
+        try {
+            $response = $this->http
+                ->withHeaders([
+                    'X-TEAM-SECRET-KEY' => $this->teamSecretKey,
+                    'X-Requested-With' => 'XMLHttpRequest',
+                ])
+                ->acceptJson()
+                ->asJson()
+                ->timeout($this->timeout)
+                ->post($this->endpoint(), $record);
+        } catch (ConnectionException $exception) {
+            throw LaralogClientHttpException::connectionFailed($exception);
         }
 
-        $httpStatusCode = intval(explode(' ', $http_response_header[0])[1]);
-        if ($httpStatusCode < 200 || $httpStatusCode > 299) {
-            throw new LaralogClientHttpException("Request to laralog server failed with code $httpStatusCode & response $response");
+        if ($response->failed()) {
+            throw LaralogClientHttpException::unexpectedStatus($response->status(), $response->body());
         }
     }
 }
