@@ -5,7 +5,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/laranex/laralog-client.svg?style=flat-square)](https://packagist.org/packages/laranex/laralog-client)
 [![License](https://img.shields.io/packagist/l/laranex/laralog-client.svg?style=flat-square)](LICENSE.md)
 
-A Laravel log channel that ships your application logs to a [Laralog Server](https://github.com/naythukhant/laralog) over HTTP. Register it as your default channel or add it to a stack, and every record is posted as JSON (`level`, `message`, normalised `context`) to your server with your team's secret key.
+A Laravel log channel that ships your application logs to a [Laralog Server](https://github.com/naythukhant/laralog) over HTTP. Register it as your default channel or add it to a stack, and every record is posted as JSON (`level`, `message`, normalized `context`) to your server with your team's secret key.
 
 ## Documentation
 

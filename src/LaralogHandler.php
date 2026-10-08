@@ -85,7 +85,7 @@ class LaralogHandler extends AbstractProcessingHandler
     }
 
     /**
-     * Normalise context (exceptions, dates, objects) into JSON-safe values.
+     * Normalize context (exceptions, dates, objects) into JSON-safe values.
      */
     protected function getDefaultFormatter(): FormatterInterface
     {
@@ -95,7 +95,7 @@ class LaralogHandler extends AbstractProcessingHandler
     /**
      * Build the JSON body the Laralog server expects.
      *
-     * The normalised record is preferred; the raw record is used when a
+     * The normalized record is preferred; the raw record is used when a
      * custom formatter did not produce an array.
      *
      * @param  array<string, mixed>|LogRecord  $record

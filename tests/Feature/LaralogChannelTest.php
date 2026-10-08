@@ -45,7 +45,7 @@ it('sends the Monolog level name for every level', function (string $level, stri
     ['emergency', 'EMERGENCY'],
 ]);
 
-it('normalises exceptions and dates in the context before sending', function (): void {
+it('normalizes exceptions and dates in the context before sending', function (): void {
     fakeLaralogServer();
     Log::channel('laralog')->error('Boom', [
         'exception' => new RuntimeException('Something broke', 7),

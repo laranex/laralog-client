@@ -56,7 +56,7 @@ it('handles a record pushed straight through Monolog', function (): void {
     ]);
 });
 
-it('normalises objects in the context', function (): void {
+it('normalizes objects in the context', function (): void {
     [$http, $handler] = handlerWithFake();
     $logger = new Logger('app', [$handler]);
 

@@ -33,7 +33,7 @@ Use this skill when a Laravel application should ship its logs to a Laralog serv
 ### 3. Log
 
 - use the `Log` facade as usual; each record is posted as JSON `{level, message, context}` to `{base_url}/api/logs` with the `X-TEAM-SECRET-KEY` header
-- exceptions, dates and objects in the context are normalised by Monolog's `NormalizerFormatter`, so `['exception' => $e]` arrives as class, message, code, file and trace
+- exceptions, dates and objects in the context are normalized by Monolog's `NormalizerFormatter`, so `['exception' => $e]` arrives as class, message, code, file and trace
 - non-2xx responses and connection failures are swallowed by default (first failure goes to PHP's error log); with `ignore_exceptions` false (config or per-channel option) they throw `Laranex\LaralogClient\Exceptions\LaralogClientHttpException` (`getCode()` is the HTTP status, `0` for connection failures)
 
 ### 4. Test
