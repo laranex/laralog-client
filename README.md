@@ -63,6 +63,13 @@ To tune the channel or add more of them, declare them in `config/logging.php` wi
 
 By default a request the server rejects, or that cannot reach it, never breaks the code that logged: the record is dropped and the first failure is written to PHP's error log. Set `LARALOG_CLIENT_IGNORE_EXCEPTIONS=false` (for example in tests or CI), or `'ignore_exceptions' => false` on a channel, to throw `Laranex\LaralogClient\Exceptions\LaralogClientHttpException` with the HTTP status as its code instead.
 
+## Built for humans and AI agents
+
+The documentation is written for developers, and the package ships an agent skill so AI coding agents use it the way it's meant to be used.
+
+- **Laravel Boost** installs the skill automatically: run `php artisan boost:install` (or `boost:update`).
+- **Any other agent** (Claude Code, Codex, Cursor and others): `npx skills add laranex/laralog-client`.
+
 ## Testing
 
 ```bash
