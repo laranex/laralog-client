@@ -15,7 +15,7 @@ Versions 2 and 3 were never released; v4.0.0 follows v1.0.1 directly so every La
 - The handler class `Laranex\LaralogClient\LaralogClient` was renamed to `Laranex\LaralogClient\LaralogHandler`; `Laranex\LaralogClient\LaralogClient` is now the HTTP client that posts records to the server.
 - `LaralogClientHttpException` extends `RuntimeException`, carries the HTTP status as its code, keeps the underlying connection exception as `getPrevious()`, and is also thrown when `base_url` or `team_secret_key` is missing.
 - The `laralog` channel honours `level`, `bubble` and `name` from `config/logging.php`, and any extra channel may use `'driver' => 'laralog'`. An unknown `level` is rejected (Laravel then falls back to its emergency logger) instead of being passed to Monolog unchecked.
-- Requires `guzzlehttp/guzzle` ^7.5 for Laravel's HTTP client (Laravel 10 only suggests it; Laravel 11+ already requires it).
+- Requires `guzzlehttp/guzzle` ^7.2 or ^8 for Laravel's HTTP client (Laravel 10 only suggests it; Laravel 11+ already requires it).
 - The config file is `config/laralog-client.php` and is published with the `laralog-client` or `laralog-client-config` tag.
 
 ### Upgrading
