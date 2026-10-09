@@ -18,6 +18,7 @@ Versions 2 and 3 were never released; v4.0.0 follows v1.0.1 directly so every La
 - Requires `guzzlehttp/guzzle` ^7.2 or ^8 for Laravel's HTTP client (Laravel 10 only suggests it; Laravel 11+ already requires it).
 - A failed request no longer breaks the code that logged: by default the record is dropped and the first failure is written to PHP's error log. Set the new `ignore_exceptions` config value (`LARALOG_CLIENT_IGNORE_EXCEPTIONS`, default `true`) or a channel's `ignore_exceptions` option to `false` to throw `LaralogClientHttpException` instead, e.g. in tests or CI.
 - The config file is `config/laralog-client.php` and is published with the `laralog-client` or `laralog-client-config` tag.
+- The service provider no longer calls `config_path()`, which only `laravel/framework` defines; it uses the application's `configPath()`, so the package runs on the `illuminate/*` components it requires.
 
 ### Upgrading
 - Require PHP 8.1+ and Laravel 10+ (`composer require laranex/laralog-client:^4.0`). Laravel 9 is not supported: Testbench 7 cannot run Pest 2+ and Composer blocks every Laravel 9 release for security advisories.

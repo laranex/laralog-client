@@ -43,7 +43,7 @@ class LaralogClientServiceProvider extends ServiceProvider
         }
 
         $this->publishes([
-            __DIR__.'/../config/laralog-client.php' => config_path('laralog-client.php'),
+            __DIR__.'/../config/laralog-client.php' => $this->app->configPath('laralog-client.php'),
         ], ['laralog-client', 'laralog-client-config']);
     }
 
