@@ -213,3 +213,14 @@ it('rejects an unknown channel level so Laravel falls back to its emergency logg
         ->and($handlers[0])->not->toBeInstanceOf(LaralogHandler::class);
     Http::assertNothingSent();
 })->with(['verbose', 123, true]);
+
+it('falls back to the emergency logger when the server config is missing', function (string $key): void {
+    fakeLaralogServer();
+    config()->set('laralog-client.'.$key, null);
+
+    $handlers = Log::channel('laralog')->getLogger()->getHandlers();
+
+    expect($handlers)->not->toBeEmpty()
+        ->and($handlers[0])->not->toBeInstanceOf(LaralogHandler::class);
+    Http::assertNothingSent();
+})->with(['base_url', 'team_secret_key']);

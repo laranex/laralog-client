@@ -11,7 +11,7 @@
         "monolog",
         "log-channel"
     ],
-    "homepage": "https://laranex.vercel.app/laralog-client",
+    "homepage": "https://github.com/laranex/laralog-client",
     "license": "MIT",
     "authors": [
         {

@@ -39,7 +39,7 @@ LARALOG_CLIENT_TIMEOUT=5                              # timeout in seconds (defa
 LARALOG_CLIENT_IGNORE_EXCEPTIONS=true                 # ignore_exceptions (default true)
 ```
 
-- `base_url` and `team_secret_key` are required. Without them, the first record sent through the channel throws `Laranex\LaralogClient\Exceptions\LaralogClientHttpException`.
+- `base_url` and `team_secret_key` are required. Without them, building the channel throws `Laranex\LaralogClient\Exceptions\LaralogClientHttpException`; Laravel catches it and writes to its emergency logger (`storage/logs/laravel.log`) instead, so nothing reaches Laralog.
 - Records are posted as JSON `{level, message, context}` to `{base_url}/api/logs` with the `X-TEAM-SECRET-KEY` header.
 
 ## Use
@@ -98,7 +98,7 @@ Http::assertSent(fn (Request $request): bool => $request->url() === 'https://lar
     && $request['message'] === 'Stock low');
 ```
 
-Set `laralog-client.ignore_exceptions` to `false` in tests so a misconfigured channel fails loudly.
+Set `laralog-client.ignore_exceptions` to `false` in tests so a rejected or unreachable request fails the test instead of being dropped.
 
 ## Avoid
 

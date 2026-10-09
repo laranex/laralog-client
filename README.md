@@ -7,6 +7,16 @@
 
 Laralog for Laravel: a log channel that sends your logs to a Laralog server. Built for humans and AI agents.
 
-## Documentation
+## Usage
 
-Full documentation, including installation, usage and the AI agent skill, lives at **[laranex.vercel.app/laralog-client](https://laranex.vercel.app/laralog-client)**.
+```bash
+composer require laranex/laralog-client
+```
+
+```env
+LOG_CHANNEL=laralog
+LARALOG_CLIENT_BASE_URL=https://laralog.example.com
+LARALOG_CLIENT_TEAM_SECRET_KEY=your-team-secret
+```
+
+Configuration, channel options, failure handling and testing are covered by the package's agent skill in [`skills/laralog-client/SKILL.md`](skills/laralog-client/SKILL.md) (install it with `npx skills add laranex/laralog-client`, or let Laravel Boost pick it up).
